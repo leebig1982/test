@@ -15,7 +15,6 @@ if ($todayW === 1) {
 }
 
 $volMax = 2;//成交量N倍以上
-$priceMin = 5;//股價n%以下
 $todayList = getMarketData($today);
 
 if (empty($todayList)) {
@@ -29,7 +28,9 @@ if (empty($yesterdayList)) {
     exit();
 }
 
-echo sprintf('====%s~%s 成交量%s倍以上 & 漲幅%s%%以下 ====', $today, $yesterday, $volMax, $priceMin).PHP_EOL;
+echo sprintf('====%s~%s[上市]成交量%s倍以上====', $today, $yesterday, $volMax).PHP_EOL;
+
+$result = [];
 foreach ($todayList as $id => $row) {
     if (!isset($yesterdayList[$id])) {
         continue;
@@ -46,17 +47,27 @@ foreach ($todayList as $id => $row) {
     $yesterdayClose = $yesterdayList[$id]['close'] ?? 0;
     //成交量倍數=今日成交/昨日成交
     $volNum = $todayVolume / $yesterdayVolume;
-    $volText = number_format($volNum, 2).'倍';
+    $volOdds = (float)number_format($volNum, 2);
 
     //漲幅%=今日收盤-昨日收盤 * 100
     $p = $todayClose - $yesterdayClose;
     $priceNum = $p / $yesterdayClose * 100;
-    $priceText = number_format( $priceNum, 2).'%';
+    $pricePercent = (float)number_format( $priceNum, 2);
 
-    if ($volNum >= $volMax && $priceNum <= $priceMin) {
-        echo sprintf('%s | %s | %s', $name, $volText, $priceText).PHP_EOL;
+    if ($volNum >= $volMax) {
+        $result[] = [
+            'name' => $name,
+            'vol_odds'  => $volOdds,
+            'price_percent'=> $pricePercent,
+        ];
     }
 }
+
+usort($result, fn($a, $b) => $b['vol_odds'] <=> $a['vol_odds']);
+foreach($result as $row) {
+    echo sprintf('%s | %s倍 | %s%%', $row['name'], $row['vol_odds'], $row['price_percent']).PHP_EOL;
+}
+
 
 function getMarketData($date, $limit = 100000) {
     $url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date={$date}&type=ALLBUT0999";
@@ -86,7 +97,6 @@ function getMarketData($date, $limit = 100000) {
         $id = $row[0];
         $volume = (float)str_replace(',', '', $row[2]);
         $close = (float)str_replace(',', '', $row[8]);
-
         if ($volume < $limit) {
             continue;
         }
