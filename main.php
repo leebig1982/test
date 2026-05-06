@@ -14,21 +14,21 @@ if ($todayW === 1) {
     $yesterday = date('Ymd', strtotime('-1 day', $todayTimestamp));
 }
 
+$tradeBase = 100;//基本交易量要N張以上
 $volMax = 2;//成交量N倍以上
-$todayList = getMarketData($today);
-
+$todayList = getMarketData($today, $tradeBase);
 if (empty($todayList)) {
     echo sprintf('查無今日(%s)資料',$today);
     exit();
 }
 
-$yesterdayList = getMarketData($yesterday);
+$yesterdayList = getMarketData($yesterday, $tradeBase);
 if (empty($yesterdayList)) {
     echo sprintf('查無前一交易日(%s)資料',$yesterday);
     exit();
 }
 
-echo sprintf('====%s~%s[上市]成交量%s倍以上====', $today, $yesterday, $volMax).PHP_EOL;
+echo sprintf('====%s~%s[上市]成交%s張以上|成交量%s倍以上====', $today, $yesterday, $tradeBase, $volMax).PHP_EOL;
 
 $result = [];
 foreach ($todayList as $id => $row) {
@@ -69,7 +69,8 @@ foreach($result as $row) {
 }
 
 
-function getMarketData($date, $limit = 100000) {
+function getMarketData($date, $tradeBase = 100) {
+    $tradeLimit = $tradeBase * 1000;
     $url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date={$date}&type=ALLBUT0999";
     $json = file_get_contents($url);
     if (!$json) {
@@ -97,7 +98,7 @@ function getMarketData($date, $limit = 100000) {
         $id = $row[0];
         $volume = (float)str_replace(',', '', $row[2]);
         $close = (float)str_replace(',', '', $row[8]);
-        if ($volume < $limit) {
+        if ($volume < $tradeLimit) {
             continue;
         }
 
