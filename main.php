@@ -1,6 +1,7 @@
 <?php
 $today = date('Ymd');
-$todayW = date('w', strtotime($today));
+$todayTimestamp = strtotime($today);
+$todayW = date('w', $todayTimestamp);
 if (in_array($todayW, [0,6])) {
     echo '周末不開盤';
     exit();
@@ -8,9 +9,9 @@ if (in_array($todayW, [0,6])) {
 
 //周一
 if ($todayW === 1) {
-    $yesterday = date('Ymd', strtotime('last friday'));
+    $yesterday = date('Ymd', strtotime('last friday', $todayTimestamp));
 }else{
-    $yesterday = date('Ymd', strtotime('-1 day'));
+    $yesterday = date('Ymd', strtotime('-1 day', $todayTimestamp));
 }
 
 $volMax = 2;//成交量N倍以上
