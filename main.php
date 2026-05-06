@@ -1,11 +1,11 @@
 <?php
-$todayW = date('w');
+$today = date('Ymd');
+$todayW = date('w', strtotime($today));
 if (in_array($todayW, [0,6])) {
     echo '周末不開盤';
     exit();
 }
 
-$today = date('Ymd');
 //周一
 if ($todayW === 1) {
     $yesterday = date('Ymd', strtotime('last friday'));
