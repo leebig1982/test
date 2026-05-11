@@ -1,7 +1,7 @@
 <?php
 $today = date('Ymd');
 $todayTimestamp = strtotime($today);
-$todayW = date('w', $todayTimestamp);
+$todayW = (int)date('w', $todayTimestamp);
 if (in_array($todayW, [0,6])) {
     echo '周末不開盤';
     exit();
