@@ -63,7 +63,12 @@ foreach ($todayList as $id => $row) {
     }
 }
 
-usort($result, fn($a, $b) => $b['vol_odds'] <=> $a['vol_odds']);
+usort($result, function($a, $b){
+    if ($a['vol_odds'] == $b['vol_odds']) {
+        return 0;
+    }
+    return ($a['vol_odds'] < $b['vol_odds']) ? 1 : -1;
+});
 foreach($result as $row) {
     echo sprintf('%s | %s倍 | %s%%', $row['name'], $row['vol_odds'], $row['price_percent']).PHP_EOL;
 }
